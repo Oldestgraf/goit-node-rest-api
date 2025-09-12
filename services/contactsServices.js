@@ -41,3 +41,15 @@ export async function addContact(name, email, phone) {
   await writeContacts(contacts);
   return newContact;
 }
+
+export async function updateContact(contactId, body) {
+  const contacts = await readContacts();
+  const index = contacts.findIndex(c => c.id === contactId);
+
+  if (index === -1) return null;
+
+  contacts[index] = { ...contacts[index], ...body };
+  await writeContacts(contacts);
+
+  return contacts[index];
+}
