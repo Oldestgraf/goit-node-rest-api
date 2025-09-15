@@ -4,9 +4,10 @@ import {
     removeContact,
     addContact,
     updateContact as updateContactService,
+    updateStatusContact as updateStatusContactService,
 } from "../services/contactsServices.js";
 
-import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
+import { createContactSchema, updateContactSchema, updateFavoriteSchema } from "../schemas/contactsSchemas.js";
 import HttpError from "../helpers/HttpError.js"
 
 export const getAllContacts = async(req, res, next) => {
@@ -45,8 +46,8 @@ export const createContact = async (req, res, next) => {
     const { error } = createContactSchema.validate(req.body);
     if (error) throw HttpError(400, error.message);
 
-    const { name, email, phone } = req.body;
-    const newContact = await addContact(name, email, phone);
+    const { name, email, phone, favorite } = req.body;
+    const newContact = await addContact({ name, email, phone, favorite });
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
@@ -72,3 +73,17 @@ export const updateContact = async (req, res, next) => {
   }
 };
 
+export const updateStatusContact = async (req, res, next) => {
+  try {
+    const { error } = updateFavoriteSchema.validate(req.body);
+    if (error) throw HttpError(400, error.message);
+
+    const { id } = req.params;
+    const updated = await updateStatusContactService(id, req.body);
+    if (!updated) throw HttpError(404, "Not found");
+
+    res.status(200).json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
