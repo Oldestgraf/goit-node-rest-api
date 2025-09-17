@@ -5,3 +5,5 @@
 ### Тема 6. PostgresSQL та Sequelize. Branch: 03-postgresql
 
 ### Тема 7. Аутентифікація та авторизація. Branch: 04-auth
+
+### Тема 9. Робота з файлами та тестування додатків. Branch: hw05-avatars
