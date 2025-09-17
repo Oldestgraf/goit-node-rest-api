@@ -8,6 +8,7 @@ import {
   updateContact,
   updateStatusContact,
 } from "../controllers/contactsControllers.js";
+import upload from "../middlewares/upload.js";
 
 const contactsRouter = express.Router();
 
@@ -16,7 +17,10 @@ contactsRouter.use(auth);
 contactsRouter.get("/", getAllContacts);
 contactsRouter.get("/:id", getOneContact);
 contactsRouter.delete("/:id", deleteContact);
-contactsRouter.post("/", createContact);
+contactsRouter.post(
+  "/",
+  upload.single("avatar"),
+  createContact);
 contactsRouter.put("/:id", updateContact);
 contactsRouter.patch("/:id/favorite", updateStatusContact);
 

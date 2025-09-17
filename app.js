@@ -9,15 +9,15 @@ import errorHandler from "./middlewares/errorHandler.js";
 import sequelize from "./db/sequelize.js";
 import authRouter from "./routes/authRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
-import Contact from "./db/contacts.js";
 import validationRouter from "./routes/validationRouter.js";
-await sequelize.sync({ force: true });
 
 const app = express();
 
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static("public"));
 
 app.use("/api/validation", validationRouter);
 app.use("/api/contacts", contactsRouter);

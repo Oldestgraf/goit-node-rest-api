@@ -1,12 +1,13 @@
 import {
-  isEmailInUse,
-  registerUser,
-  validateUserCredentials,
-  createToken,
-  setUserToken,
-  getUserById,
-  clearToken,
-  toPublicUser,
+    isEmailInUse,
+    registerUser,
+    validateUserCredentials,
+    createToken,
+    setUserToken,
+    getUserById,
+    clearToken,
+    toPublicUser,
+    updateUserAvatar,
 } from "../services/authServices.js";
 
 import { registerSchema, loginSchema } from "../schemas/authSchemas.js";
@@ -72,4 +73,17 @@ export const logout = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+};
+
+export const updateAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Avatar file is required" });
+    }
+    const { path: tempPath, originalname } = req.file;
+    const avatarURL = await updateUserAvatar(req.user.id, tempPath, originalname);
+    if (!avatarURL) return res.status(401).json({ message: "Not authorized" });
+
+    return res.status(200).json({ avatarURL });
+  } catch (e) { next(e); }
 };

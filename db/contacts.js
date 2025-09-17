@@ -33,7 +33,6 @@ User.hasMany(Contact, { foreignKey: "ownerId" });
 Contact.belongsTo(User, { foreignKey: "ownerId", as: "owner" });
 
 // dev:
-// await User.sync({ alter: true });
-// await Contact.sync({ alter: true });
+// Contact.sync({ force: true }); //alter
 
 export default Contact;
