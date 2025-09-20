@@ -54,6 +54,7 @@ export const clearToken = async (userId) => {
 export const toPublicUser = (user) => ({
   email: user.email,
   subscription: user.subscription,
+  avatarURL: user.avatarURL ?? null,
 });
 
 export const updateUserAvatar = async (userId, tempFilePath, originalName) => {

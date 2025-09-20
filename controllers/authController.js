@@ -57,7 +57,7 @@ export const current = async (req, res, next) => {
     const user = await getUserById(req.user.id);
     if (!user) return res.status(401).json({ message: "Not authorized" });
 
-    return res.status(200).json(toPublicUser(user));
+    return res.status(200).json({ user: toPublicUser(user) });
   } catch (e) {
     next(e);
   }
