@@ -4,6 +4,9 @@ import gravatar from "gravatar";
 import path from "node:path";
 import fs from "node:fs/promises";
 import User from "../db/user.js";
+import { sendMail } from "../helpers/mailer.js";
+import { verify } from "node:crypto";
+import { nanoid } from "nanoid";
 
 export const isEmailInUse = async (email) => {
   const exists = await User.findOne({ where: { email } });
@@ -13,8 +16,32 @@ export const isEmailInUse = async (email) => {
 export const registerUser = async ({ email, password }) => {
   const hash = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email, { s: "250", d: "identicon", protocol: "https" });
-  const user = await User.create({ email, password: hash, avatarURL });
+  const verificationToken = nanoid();
+  const user = await User.create({
+    email,
+    password: hash,
+    avatarURL,
+    verify: false,
+    verificationToken,
+  });
   return user;
+};
+
+export const sendVerificationEmail = async (email, verificationToken) => {
+  const base = "http://localhost:3000";
+  const prefix = "/api/auth";
+  const link = `${base}${prefix}/verify/${verificationToken}`;
+
+  await sendMail({
+    to: email,
+    subject: "Verify your email",
+    html: `
+      <p>Hi!</p>
+      <p>Please verify your email by clicking the link below:</p>
+      <p><a href="${link}" target="_blank" rel="noopener">Verify Email</a></p>
+      <p>Or open this URL: ${link}</p>
+    `,
+  });
 };
 
 export const validateUserCredentials = async (email, password) => {
@@ -55,14 +82,37 @@ export const toPublicUser = (user) => ({
   email: user.email,
   subscription: user.subscription,
   avatarURL: user.avatarURL ?? null,
+  verify: user.verify,
 });
+
+export const verifyUserByToken = async (verificationToken) => {
+  const user = await User.findOne({ where: { verificationToken } });
+  if (!user) return null;
+
+  await user.update({ verify: true, verificationToken: null });
+  return user;
+};
+
+export const resendVerification = async (email) => {
+  const user = await User.findOne({ where: { email } });
+  if (!user) return { status: "not_found" };
+  if (user.verify) return { status: "already_verified" };
+
+  let token = user.verificationToken;
+  if (!token) {
+    token = nanoid();
+    await user.update({ verificationToken: token });
+  }
+  await sendVerificationEmail(user.email, token);
+  return { status: "sent" };
+};
 
 export const updateUserAvatar = async (userId, tempFilePath, originalName) => {
   const user = await User.findByPk(userId);
   if (!user) return null;
 
   const avatarsDir = path.resolve("public", "avatars");
-  const ext = path.extname(originalName); // .png / .jpg ...
+  const ext = path.extname(originalName);
   const fileName = `${userId}_${Date.now()}${ext}`;
   const finalPath = path.join(avatarsDir, fileName);
 
